@@ -1,0 +1,3 @@
+timestamp,sequence,team,robot_id,interval_ms,left_target_eps,left_measured_eps,left_duty,right_target_eps,right_measured_eps,right_duty,flags
+2026-09-06T10:48:28.070,0,0,2,50,0,0,0,0,0,0,0x03
+2026-09-06T10:48:32.015,1,0,2,55,0,0,0,0,0,0,0x03

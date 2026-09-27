@@ -1,0 +1,4 @@
+timestamp,sequence,team,robot_id,interval_ms,left_target_eps,left_measured_eps,left_duty,right_target_eps,right_measured_eps,right_duty,flags
+2026-09-06T10:48:13.574,44,0,2,50,0,0,17700,0,0,20366,0x07
+2026-09-06T10:48:22.717,45,0,2,50,0,0,0,0,0,0,0x03
+2026-09-06T10:48:22.723,46,0,2,50,0,0,0,0,0,0,0x03
