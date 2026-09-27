@@ -1,0 +1,34 @@
+Relatório de Análise da Telemetria - Robô VSSS
+Data da análise: 11 de Setembro de 2026
+
+OBJETIVO:
+Avaliar se o controle do robô (capacidade das rodas acompanharem as velocidades de referência 'target_eps' vs 'measured_eps') está funcionando adequadamente e analisar a estabilidade da conexão de rádio a partir dos dados de telemetria extraídos.
+
+1. TESTES DE PULSO / SOLO (REGIME PERMANENTE)
+Foram analisados os arquivos telemetria_pulso_solo_*.txt (ex: 185244_156329.txt), que funcionam como testes ao degrau e são o melhor cenário para avaliar a sintonia do controle em malha fechada sem a interferência da inércia em manobras rápidas.
+
+O controle está EXCELENTE. Dados empíricos que embasam a conclusão:
+- Roda Direita: O acompanhamento está quase perfeito. Para uma referência constante de 3500 bordas/s, a medição média estabilizou em exatos 3500 bordas/s. O Erro Absoluto Médio (MAE) em regime estacionário foi de apenas ~3.6%.
+- Roda Esquerda: Apresenta um leve erro de overshoot (passa um pouco do alvo), mas dentro de limites aceitáveis. Para uma referência de 3374 bordas/s, a medição estabilizou em torno de 3670 bordas/s. O erro relativo ficou na faixa de ~7.0% a 8.7%.
+
+Esses valores indicam que a identificação dinâmica da planta (estimador RLS) está operando de maneira correta e as malhas do controlador são capazes de manter as velocidades desejadas com precisão assim que o robô entra em regime permanente.
+
+2. TELEMETRIA DE USO NORMAL (DURANTE PARTIDAS)
+Ao avaliar arquivos de uso contínuo em jogo (ex: telemetria_20260906_163941_141.txt e telemetria_20260906_105626_213.txt), notou-se um erro relativo instantâneo maior, variando de 40% a 80%.
+
+Isso NÃO significa que o controle esteja ruim.
+Durante uma partida, os comandos de velocidade enviados pelo Coach mudam drasticamente a cada quadro da câmera (~16ms). Identificou-se através de correlação cruzada que há um atraso sistêmico de 8 a 14 amostras (entre 130ms e 230ms, devido a inércia, torque do motor e latência do loop). Na prática, por limitações puramente físicas (inércia do motor x tempo), o robô não tem tempo para atingir o 'target' atual antes que um novo comando totalmente diferente já tenha sido emitido pelo Coach.
+
+3. ESTABILIDADE DA CONEXÃO DE RÁDIO E PERDAS DE PACOTES
+Foi feita uma varredura automatizada nos maiores logs da partida (como telemetria_20260906_105626_213.txt com >11.000 amostras consecutivas) em busca de sinais de desconexão.
+
+A conexão (nRF24) mostrou-se 100% ESTÁVEL. Dados que embasam a conclusão:
+- Alerta de Timeout (Flag 0x08): O firmware marca a flag '0x08' quando o watchdog detecta falta de comunicação. A varredura apontou exatas ZERO ocorrências dessa flag.
+- Lacunas de Sequência de ACKs: O número de sequência dos pacotes viaja de 0 a 255. Desconexões ou falhas no rádio causariam perdas e 'pulos' numéricos na sequência. Em todas as dezenas de milhares de amostras checadas, o número de pacotes perdidos ou não-registrados (sequence gaps) foi estritamente de 0 (0.0% loss).
+
+VEREDITO E CONCLUSÃO FINAL
+O controle do robô é excelente quando estabilizado e o hardware de comunicação atua sem nenhuma perda de pacotes. O sistema no geral é extremamente robusto.
+
+Ações para potencializar a performance:
+1. Recalibrar o ajuste-fino/ganhos da roda esquerda, apenas para remover o pequeno overshoot sistêmico de 300 bordas/s em altas rotações.
+2. Qualquer otimização no pipeline de software/hardware que reduza o 'delay global' (aqueles ~150ms percebidos) deixará o robô exponencialmente mais reativo e letal dentro de campo.

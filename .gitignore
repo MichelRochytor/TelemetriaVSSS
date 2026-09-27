@@ -1,0 +1,3 @@
+telemetria_*.txt
+!.gitignore
+!README.md
